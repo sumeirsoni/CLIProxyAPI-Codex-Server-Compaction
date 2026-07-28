@@ -39,9 +39,15 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          unformatted="$(gofmt -l $(git ls-files '*.go'))"
+          unformatted=""
+          while IFS= read -r file; do
+            result="$(gofmt -l "$file")"
+            if [[ -n "$result" ]]; then
+              unformatted+="${result}"$'\n'
+            fi
+          done < <(git ls-files '*.go')
           if [[ -n "$unformatted" ]]; then
-            printf 'The following Go files require gofmt:\n%s\n' "$unformatted" >&2
+            printf 'The following Go files require gofmt:\n%s' "$unformatted" >&2
             exit 1
           fi
 
