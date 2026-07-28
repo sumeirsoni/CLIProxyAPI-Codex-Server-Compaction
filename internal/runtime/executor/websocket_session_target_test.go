@@ -244,6 +244,9 @@ func TestWebsocketRetryBindFailureClearsActiveSessionState(t *testing.T) {
 					return
 				}
 				if connection == 2 {
+					if _, _, errRead := conn.ReadMessage(); errRead == nil {
+						t.Error("retry connection received an unexpected request after lifecycle bind rejection")
+					}
 					return
 				}
 				if _, _, errRead := conn.ReadMessage(); errRead != nil {

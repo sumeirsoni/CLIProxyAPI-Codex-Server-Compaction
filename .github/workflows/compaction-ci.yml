@@ -21,10 +21,14 @@ jobs:
         include:
           - os: ubuntu-latest
             binary_suffix: ""
+            vet_flags: ""
           - os: macos-latest
             binary_suffix: ""
+            vet_flags: ""
           - os: windows-latest
             binary_suffix: ".exe"
+            # The upstream Windows plugin loader intentionally crosses syscall pointer boundaries.
+            vet_flags: "-unsafeptr=false"
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -57,7 +61,9 @@ jobs:
 
       - name: Vet
         shell: bash
-        run: go vet ./...
+        env:
+          VET_FLAGS: ${{ matrix.vet_flags }}
+        run: go vet ${VET_FLAGS} ./...
 
       - name: Build
         shell: bash
