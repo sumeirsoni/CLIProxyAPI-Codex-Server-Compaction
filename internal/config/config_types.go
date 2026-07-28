@@ -133,6 +133,18 @@ type CodexConfig struct {
 	LiveMediaRelay CodexLiveMediaRelayConfig `yaml:"live-media-relay" json:"live-media-relay"`
 }
 
+// CodexServerCompactionConfig configures transparent remote compaction for Claude Code sessions.
+type CodexServerCompactionConfig struct {
+	Enabled             bool             `yaml:"enabled" json:"enabled"`
+	StatePath           string           `yaml:"state-path" json:"state-path"`
+	TriggerRatio        float64          `yaml:"trigger-ratio" json:"trigger-ratio"`
+	OutputReserveTokens int64            `yaml:"output-reserve-tokens" json:"output-reserve-tokens"`
+	SafetyMarginTokens  int64            `yaml:"safety-margin-tokens" json:"safety-margin-tokens"`
+	RetainedUserTokens  int64            `yaml:"retained-user-tokens" json:"retained-user-tokens"`
+	StateTTL            string           `yaml:"state-ttl" json:"state-ttl"`
+	Models              map[string]int64 `yaml:"models" json:"models"`
+}
+
 // CodexLiveMediaRelayConfig configures the in-process Codex Live WebRTC gateway.
 type CodexLiveMediaRelayConfig struct {
 	Enabled                 bool                 `yaml:"enabled" json:"enabled"`

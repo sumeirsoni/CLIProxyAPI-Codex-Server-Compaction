@@ -118,6 +118,9 @@ type Config struct {
 	// Codex configures provider-wide Codex request behavior.
 	Codex CodexConfig `yaml:"codex" json:"codex"`
 
+	// CodexServerCompaction configures transparent server-side compaction for Claude-origin Codex requests.
+	CodexServerCompaction CodexServerCompactionConfig `yaml:"codex-server-compaction" json:"codex-server-compaction"`
+
 	// CodexHeaderDefaults configures fallback headers for Codex OAuth model requests.
 	// These are used only when the client does not send its own headers.
 	CodexHeaderDefaults CodexHeaderDefaults `yaml:"codex-header-defaults" json:"codex-header-defaults"`

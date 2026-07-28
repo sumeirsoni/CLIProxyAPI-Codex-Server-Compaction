@@ -249,6 +249,20 @@ codex:
     #     username: "user"
     #     credential: "secret"
 
+# Transparent remote compaction for Claude Code requests routed to Codex.
+# Disabled by default. Model names are exact, after alias resolution.
+codex-server-compaction:
+  enabled: false
+  state-path: "~/.cli-proxy-api/compaction/state.db"
+  trigger-ratio: 0.70
+  output-reserve-tokens: 16000
+  safety-margin-tokens: 8000
+  retained-user-tokens: 20000
+  state-ttl: "168h"
+  models:
+    gpt-5.4: 1000000
+    # gpt-5.5: 272000
+
 # xAI provider behavior.
 xai:
   # When true, inject the native x_search tool when the request does not declare it.

@@ -1,7 +1,9 @@
 package config
 
 import (
+	"sort"
 	"strings"
+	"time"
 
 	sdkpluginstore "github.com/router-for-me/CLIProxyAPI/v7/sdk/pluginstore"
 )
@@ -40,6 +42,76 @@ func (cfg *Config) SanitizeCodexHeaderDefaults() {
 	}
 	cfg.CodexHeaderDefaults.UserAgent = strings.TrimSpace(cfg.CodexHeaderDefaults.UserAgent)
 	cfg.CodexHeaderDefaults.BetaFeatures = strings.TrimSpace(cfg.CodexHeaderDefaults.BetaFeatures)
+}
+
+// NormalizeCodexServerCompaction applies safe defaults and removes unusable model entries.
+func (cfg *Config) NormalizeCodexServerCompaction() {
+	if cfg == nil {
+		return
+	}
+	compaction := &cfg.CodexServerCompaction
+	compaction.StatePath = strings.TrimSpace(compaction.StatePath)
+	if compaction.StatePath == "" {
+		compaction.StatePath = DefaultCodexServerCompactionStatePath
+	}
+	if compaction.TriggerRatio <= 0 || compaction.TriggerRatio >= 1 {
+		compaction.TriggerRatio = DefaultCodexServerCompactionTriggerRatio
+	}
+	if compaction.OutputReserveTokens <= 0 {
+		compaction.OutputReserveTokens = DefaultCodexServerCompactionOutputReserveTokens
+	}
+	if compaction.SafetyMarginTokens <= 0 {
+		compaction.SafetyMarginTokens = DefaultCodexServerCompactionSafetyMarginTokens
+	}
+	if compaction.RetainedUserTokens <= 0 {
+		compaction.RetainedUserTokens = DefaultCodexServerCompactionRetainedUserTokens
+	}
+	compaction.StateTTL = normalizePositiveDuration(compaction.StateTTL, DefaultCodexServerCompactionStateTTL)
+	if len(compaction.Models) == 0 {
+		compaction.Models = nil
+		return
+	}
+	rawModels := make([]string, 0, len(compaction.Models))
+	for model := range compaction.Models {
+		rawModels = append(rawModels, model)
+	}
+	sort.Slice(rawModels, func(left, right int) bool {
+		leftTrimmed := strings.TrimSpace(rawModels[left])
+		rightTrimmed := strings.TrimSpace(rawModels[right])
+		if leftTrimmed == rightTrimmed {
+			leftExact := rawModels[left] == leftTrimmed
+			rightExact := rawModels[right] == rightTrimmed
+			if leftExact != rightExact {
+				return leftExact
+			}
+		}
+		return rawModels[left] < rawModels[right]
+	})
+	models := make(map[string]int64, len(compaction.Models))
+	for _, rawModel := range rawModels {
+		model := strings.TrimSpace(rawModel)
+		contextWindow := compaction.Models[rawModel]
+		if model == "" || contextWindow <= 0 {
+			continue
+		}
+		if _, exists := models[model]; exists {
+			continue
+		}
+		models[model] = contextWindow
+	}
+	if len(models) == 0 {
+		models = nil
+	}
+	compaction.Models = models
+}
+
+func normalizePositiveDuration(value, fallback string) string {
+	value = strings.TrimSpace(value)
+	parsed, err := time.ParseDuration(value)
+	if err != nil || parsed <= 0 {
+		return fallback
+	}
+	return parsed.String()
 }
 
 // SanitizeClaudeHeaderDefaults trims surrounding whitespace from the
