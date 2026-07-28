@@ -1,0 +1,86 @@
+name: compaction-ci
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - 'release/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: ${{ matrix.os }} format, test, vet, build
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            binary_suffix: ""
+          - os: macos-latest
+            binary_suffix: ""
+          - os: windows-latest
+            binary_suffix: ".exe"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Check formatting
+        shell: bash
+        run: |
+          set -euo pipefail
+          unformatted="$(gofmt -l $(git ls-files '*.go'))"
+          if [[ -n "$unformatted" ]]; then
+            printf 'The following Go files require gofmt:\n%s\n' "$unformatted" >&2
+            exit 1
+          fi
+
+      - name: Test
+        shell: bash
+        run: go test ./...
+
+      - name: Vet
+        shell: bash
+        run: go vet ./...
+
+      - name: Build
+        shell: bash
+        env:
+          BINARY_SUFFIX: ${{ matrix.binary_suffix }}
+        run: |
+          set -euo pipefail
+          output="test-output${BINARY_SUFFIX}"
+          go build -o "$output" ./cmd/server
+          rm -f "$output"
+
+  race:
+    name: linux focused race tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Run focused race tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          go test -race -run 'CodexServerCompaction' ./internal/config ./internal/runtime/executor
+          go test -race -run 'CodexServerCompaction|CodexCompaction' ./internal/runtime/executor/helps

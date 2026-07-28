@@ -2,9 +2,9 @@ name: release
 
 on:
   push:
-    # run only against tags
+    # Run only for fork-specific compaction release tags.
     tags:
-      - '*'
+      - 'v*-compaction.*'
 
 permissions:
   contents: write
