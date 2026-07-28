@@ -5,10 +5,9 @@ Server compaction is opt-in and can be disabled without changing normal CLIProxy
 ## Fast feature rollback
 
 1. Set `codex-server-compaction.enabled` to `false` in the active private configuration.
-2. Remove the wrapper activation variable or disable the automatic `PreCompact` blocking hook so Claude Code's native fallback is available again.
-3. Reload or restart the service using the deployment's normal service manager.
-4. Start a new client turn and confirm requests route normally without new compaction state updates.
-5. Confirm Claude Code's local compaction remains enabled as the client-side fallback.
+2. Reload or restart the service using the deployment's normal service manager.
+3. Start a new client turn and confirm requests route normally without new compaction state updates.
+4. Keep Claude's local compaction enabled as the client-side fallback.
 
 The remaining server-compaction fields and state database are inert while the feature is disabled.
 

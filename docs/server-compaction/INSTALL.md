@@ -159,47 +159,24 @@ exec claude "$@"
 
 Use a CLIProxyAPI model alias that routes to the intended Codex model, but configure `codex-server-compaction.models` with the final resolved Codex key. Test model routing while compaction is still disabled, then enable the feature and begin with a non-critical session.
 
-## Avoiding duplicate automatic compaction
+## PreCompact hook guidance
 
-Claude Code maintains its own local compaction lifecycle. The proxy cannot remove old messages from Claude Code's local transcript, so a long session may otherwise be compacted once by Codex upstream and later summarized again by Claude Code.
+Claude Code can invoke a `PreCompact` hook before its own automatic or manual local compaction. Server compaction happens in the proxy and does not require a hook. If you configure one, use it only for local observability or policy reminders.
 
-To prefer Codex server compaction, install an optional `PreCompact` hook that blocks only automatic local compaction when all of these conditions are true:
+Recommended behavior:
 
-- The client was launched through the proxy wrapper.
-- The wrapper set a dedicated activation variable.
-- The configured proxy endpoint is local.
-- The proxy health check succeeds.
+- Accept both automatic and manual PreCompact events.
+- Read hook input from standard input only if needed.
+- Avoid logging prompt content, tool results, OAuth data, headers, or full hook payloads.
+- Do not copy OpenAI encrypted compaction artifacts into Claude configuration or hook output.
+- Do not delete the server state database from a hook.
+- Keep Claude's local compaction available as a fallback. The proxy detects local-compaction requests and skips its own server-compaction path for them.
+- Make the hook fast and non-blocking so it does not interrupt the client.
 
-Manual `/compact` should remain available. If the proxy is unhealthy or the wrapper marker is absent, the hook must allow Claude Code's native compaction.
-
-Example hook command:
-
-```sh
-#!/bin/sh
-set -u
-
-[ "${CLIPROXY_SERVER_COMPACTION:-}" = "1" ] || exit 0
-base_url=${ANTHROPIC_BASE_URL:-}
-auth_token=${ANTHROPIC_AUTH_TOKEN:-}
-case "$base_url" in
-  http://127.0.0.1:*|http://localhost:*) ;;
-  *) exit 0 ;;
-esac
-[ -n "$auth_token" ] || exit 0
-
-curl -fsS --connect-timeout 1 --max-time 2 \
-  -H "Authorization: Bearer $auth_token" \
-  "${base_url%/}/v1/models" >/dev/null 2>&1 || exit 0
-
-printf '%s\n' '{"decision":"block","reason":"Proxy-side Codex server compaction is active; native automatic compaction is disabled for this session."}'
-```
-
-Register it only for the `PreCompact` matcher `auto`. Update the wrapper to export `CLIPROXY_SERVER_COMPACTION=1` before launching Claude Code. Do not register the hook for `manual`, and do not log hook input, prompts, authorization headers, or compaction artifacts.
-
-The wrapper example above can add:
+A minimal hook command can emit a fixed reminder without recording session data:
 
 ```sh
-export CLIPROXY_SERVER_COMPACTION=1
+printf '%s\n' 'Claude local compaction is starting; verify proxy server-compaction health separately.' >&2
 ```
 
 Hook configuration formats can change between Claude Code releases. Confirm the current `PreCompact` schema in the official Claude Code documentation before deploying a settings change.

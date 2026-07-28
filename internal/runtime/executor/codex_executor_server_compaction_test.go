@@ -6,7 +6,6 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -112,14 +111,10 @@ func TestMaybeApplyCodexServerCompactionUsesSelectedOAuthAndSkipsInjectedImageTo
 }
 
 func TestMaybeApplyCodexServerCompactionFailsOpenOnStateError(t *testing.T) {
-	blockedParent := filepath.Join(t.TempDir(), "not-a-directory")
-	if errWrite := os.WriteFile(blockedParent, []byte("blocked"), 0o600); errWrite != nil {
-		t.Fatal(errWrite)
-	}
 	cfg := &config.Config{}
 	cfg.CodexServerCompaction = config.CodexServerCompactionConfig{
 		Enabled:             true,
-		StatePath:           filepath.Join(blockedParent, "compaction.db"),
+		StatePath:           "/dev/null/compaction.db",
 		TriggerRatio:        0.8,
 		OutputReserveTokens: 1,
 		SafetyMarginTokens:  1,

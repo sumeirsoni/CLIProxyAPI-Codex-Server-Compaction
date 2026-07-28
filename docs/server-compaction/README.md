@@ -43,7 +43,7 @@ Compatibility is scoped by execution identity, resolved model, selected auth, Co
 | Claude protocol | Other providers | Not supported | No compatible remote artifact path |
 | OpenAI Chat Completions | Codex model | Not activated | Feature is limited to Claude-origin requests |
 | OpenAI Responses | Codex model | Not activated by this feature | Native client behavior remains separate |
-| Claude protocol | Claude-named compatibility alias resolved to a configured Codex model | Supported | The underlying model remains Codex/GPT; the alias does not invoke Anthropic Claude |
+| Any protocol | GPT compatibility alias routed to Claude | Not supported | Aliases affect routing only |
 | Any supported path | Feature disabled or model key absent | Not activated | Normal proxy behavior continues |
 
 ## Documentation

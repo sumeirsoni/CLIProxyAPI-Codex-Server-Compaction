@@ -12,7 +12,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"runtime"
 	"sort"
 	"strings"
 	"time"
@@ -682,14 +681,12 @@ func expandCodexCompactionStatePath(path string) (string, error) {
 	if path == "" {
 		path = config.DefaultCodexServerCompactionStatePath
 	}
-	homePrefix := "~" + string(filepath.Separator)
-	if path == "~" || strings.HasPrefix(path, "~/") || strings.HasPrefix(path, homePrefix) {
+	if path == "~" || strings.HasPrefix(path, "~/") {
 		home, errHome := os.UserHomeDir()
 		if errHome != nil {
 			return "", fmt.Errorf("codex server compaction: resolve home directory: %w", errHome)
 		}
-		relative := strings.TrimPrefix(strings.TrimPrefix(path, "~/"), homePrefix)
-		path = filepath.Join(home, relative)
+		path = filepath.Join(home, strings.TrimPrefix(path, "~/"))
 	}
 	absolute, errAbs := filepath.Abs(path)
 	if errAbs != nil {
@@ -935,7 +932,7 @@ func validateCodexCompactionStatePath(path string) error {
 		if !info.IsDir() {
 			return fmt.Errorf("codex server compaction: state parent is not a directory")
 		}
-		if runtime.GOOS != "windows" && info.Mode().Perm()&0o077 != 0 {
+		if info.Mode().Perm()&0o077 != 0 {
 			return fmt.Errorf("codex server compaction: unsafe state directory permissions %o", info.Mode().Perm())
 		}
 	} else if !os.IsNotExist(errStat) {
@@ -945,7 +942,7 @@ func validateCodexCompactionStatePath(path string) error {
 		if !info.Mode().IsRegular() {
 			return fmt.Errorf("codex server compaction: state path is not a regular file")
 		}
-		if runtime.GOOS != "windows" && info.Mode().Perm()&0o077 != 0 {
+		if info.Mode().Perm()&0o077 != 0 {
 			return fmt.Errorf("codex server compaction: unsafe state file permissions %o", info.Mode().Perm())
 		}
 	} else if !os.IsNotExist(errStat) {
