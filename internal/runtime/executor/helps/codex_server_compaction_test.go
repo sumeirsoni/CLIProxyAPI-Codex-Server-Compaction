@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -221,10 +222,16 @@ func TestOpenCodexCompactionDBRejectsSymlinksAndUnsafePermissions(t *testing.T) 
 	}
 	linkDir := filepath.Join(root, "link")
 	if err := os.Symlink(realDir, linkDir); err != nil {
+		if runtime.GOOS == "windows" {
+			t.Skipf("symlink creation unavailable on Windows: %v", err)
+		}
 		t.Fatal(err)
 	}
 	if _, err := openCodexCompactionDB(filepath.Join(linkDir, "state.db")); err == nil {
 		t.Fatal("symlink state directory was accepted")
+	}
+	if runtime.GOOS == "windows" {
+		return
 	}
 	unsafeDir := filepath.Join(root, "unsafe")
 	if err := os.Mkdir(unsafeDir, 0o755); err != nil {

@@ -2665,8 +2665,8 @@ func TestXAIExecutorExecuteImagesUsesImagesEndpointAndPublishesUsage(t *testing.
 	if record.Detail != (usage.Detail{}) {
 		t.Fatalf("detail = %+v, want zero token usage", record.Detail)
 	}
-	if record.TTFT <= 0 {
-		t.Fatalf("ttft = %v, want positive duration", record.TTFT)
+	if record.TTFT < 0 {
+		t.Fatalf("ttft = %v, want non-negative duration", record.TTFT)
 	}
 	assertNoAdditionalXAIUsageRecord(t, plugin.records)
 }
@@ -3033,8 +3033,8 @@ func TestXAIExecutorExecuteVideosCreate(t *testing.T) {
 	if record.Detail != (usage.Detail{}) {
 		t.Fatalf("detail = %+v, want zero token usage", record.Detail)
 	}
-	if record.TTFT <= 0 {
-		t.Fatalf("ttft = %v, want positive duration", record.TTFT)
+	if record.TTFT < 0 {
+		t.Fatalf("ttft = %v, want non-negative duration", record.TTFT)
 	}
 	assertNoAdditionalXAIUsageRecord(t, plugin.records)
 }

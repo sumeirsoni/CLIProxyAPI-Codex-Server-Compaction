@@ -12,6 +12,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strings"
 	"time"
@@ -932,7 +933,7 @@ func validateCodexCompactionStatePath(path string) error {
 		if !info.IsDir() {
 			return fmt.Errorf("codex server compaction: state parent is not a directory")
 		}
-		if info.Mode().Perm()&0o077 != 0 {
+		if runtime.GOOS != "windows" && info.Mode().Perm()&0o077 != 0 {
 			return fmt.Errorf("codex server compaction: unsafe state directory permissions %o", info.Mode().Perm())
 		}
 	} else if !os.IsNotExist(errStat) {
@@ -942,7 +943,7 @@ func validateCodexCompactionStatePath(path string) error {
 		if !info.Mode().IsRegular() {
 			return fmt.Errorf("codex server compaction: state path is not a regular file")
 		}
-		if info.Mode().Perm()&0o077 != 0 {
+		if runtime.GOOS != "windows" && info.Mode().Perm()&0o077 != 0 {
 			return fmt.Errorf("codex server compaction: unsafe state file permissions %o", info.Mode().Perm())
 		}
 	} else if !os.IsNotExist(errStat) {
