@@ -89,37 +89,8 @@ func countCodexInputTokens(enc tokenizer.Codec, body []byte) (int64, error) {
 
 	inputItems := root.Get("input")
 	if inputItems.IsArray() {
-		arr := inputItems.Array()
-		for i := range arr {
-			item := arr[i]
-			switch item.Get("type").String() {
-			case "message":
-				content := item.Get("content")
-				if content.IsArray() {
-					parts := content.Array()
-					for j := range parts {
-						part := parts[j]
-						if text := strings.TrimSpace(part.Get("text").String()); text != "" {
-							segments = append(segments, text)
-						}
-					}
-				}
-			case "function_call":
-				if name := strings.TrimSpace(item.Get("name").String()); name != "" {
-					segments = append(segments, name)
-				}
-				if args := strings.TrimSpace(item.Get("arguments").String()); args != "" {
-					segments = append(segments, args)
-				}
-			case "function_call_output":
-				if out := strings.TrimSpace(item.Get("output").String()); out != "" {
-					segments = append(segments, out)
-				}
-			default:
-				if text := strings.TrimSpace(item.Get("text").String()); text != "" {
-					segments = append(segments, text)
-				}
-			}
+		for _, item := range inputItems.Array() {
+			appendCodexInputItemTokenSegments(item, &segments)
 		}
 	}
 
@@ -172,4 +143,72 @@ func countCodexInputTokens(enc tokenizer.Codec, body []byte) (int64, error) {
 		return 0, err
 	}
 	return int64(count), nil
+}
+
+func countCodexInputItemTokens(enc tokenizer.Codec, raw []byte) (int64, error) {
+	if enc == nil {
+		return 0, fmt.Errorf("encoder is nil")
+	}
+	if len(raw) == 0 {
+		return 0, nil
+	}
+	var segments []string
+	appendCodexInputItemTokenSegments(gjson.ParseBytes(raw), &segments)
+	text := strings.Join(segments, "\n")
+	if text == "" {
+		return 0, nil
+	}
+	count, errCount := enc.Count(text)
+	if errCount != nil {
+		return 0, errCount
+	}
+	return int64(count), nil
+}
+
+func appendCodexInputItemTokenSegments(item gjson.Result, segments *[]string) {
+	switch item.Get("type").String() {
+	case "message":
+		for _, part := range item.Get("content").Array() {
+			if text := strings.TrimSpace(part.Get("text").String()); text != "" {
+				*segments = append(*segments, text)
+			}
+		}
+	case "function_call":
+		if name := strings.TrimSpace(item.Get("name").String()); name != "" {
+			*segments = append(*segments, name)
+		}
+		if args := strings.TrimSpace(item.Get("arguments").String()); args != "" {
+			*segments = append(*segments, args)
+		}
+	case "function_call_output":
+		if output := strings.TrimSpace(item.Get("output").String()); output != "" {
+			*segments = append(*segments, output)
+		}
+	case "reasoning":
+		appendCodexReasoningTokenSegments(item.Get("summary"), segments)
+		appendCodexReasoningTokenSegments(item.Get("content"), segments)
+	case "compaction":
+		// Compaction ciphertext is opaque. Its server-reported output token count is tracked separately.
+	default:
+		if text := strings.TrimSpace(item.Get("text").String()); text != "" {
+			*segments = append(*segments, text)
+		}
+	}
+}
+
+func appendCodexReasoningTokenSegments(value gjson.Result, segments *[]string) {
+	if value.Type == gjson.String {
+		if text := strings.TrimSpace(value.String()); text != "" {
+			*segments = append(*segments, text)
+		}
+		return
+	}
+	if !value.IsArray() {
+		return
+	}
+	for _, part := range value.Array() {
+		if text := strings.TrimSpace(part.Get("text").String()); text != "" {
+			*segments = append(*segments, text)
+		}
+	}
 }

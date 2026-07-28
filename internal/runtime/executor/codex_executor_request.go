@@ -408,6 +408,19 @@ func isCodexResponsesLiteRequest(body []byte, headers http.Header) bool {
 	return value.Type == gjson.True || value.Type == gjson.String && strings.EqualFold(strings.TrimSpace(value.String()), "true")
 }
 
+func codexRequestHasImageGenerationTool(body []byte) bool {
+	tools := gjson.GetBytes(body, "tools")
+	if !tools.IsArray() {
+		return false
+	}
+	for _, tool := range tools.Array() {
+		if tool.Get("type").String() == "image_generation" || isImageGenerationFunctionTool(tool) {
+			return true
+		}
+	}
+	return false
+}
+
 func ensureImageGenerationTool(body []byte, baseModel string, auth *cliproxyauth.Auth, headers http.Header) []byte {
 	if isCodexResponsesLiteRequest(body, headers) {
 		return body
