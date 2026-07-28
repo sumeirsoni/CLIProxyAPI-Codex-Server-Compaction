@@ -1,13 +1,13 @@
 # Installation
 
-This fork is published at [CLIProxyAPI Codex Server Compaction](https://github.com/XbowSniper11/CLIProxyAPI-Codex-Server-Compaction). Build and deploy it as a separate service from upstream CLIProxyAPI so rollback remains straightforward.
+This fork is published at [CLIProxyAPI Codex Server Compaction](https://github.com/sumeirsoni/CLIProxyAPI-Codex-Server-Compaction). Build and deploy it as a separate service from upstream CLIProxyAPI so rollback remains straightforward.
 
 ## Build from source
 
 Go 1.26 or newer is required. The repository's `go.mod` is the authoritative Go version.
 
 ```sh
-REPOSITORY_URL="https://github.com/XbowSniper11/CLIProxyAPI-Codex-Server-Compaction.git"
+REPOSITORY_URL="https://github.com/sumeirsoni/CLIProxyAPI-Codex-Server-Compaction.git"
 SOURCE_DIR="${HOME}/src/CLIProxyAPI-Codex-Server-Compaction"
 INSTALL_DIR="${HOME}/.local/lib/cliproxyapi-compaction"
 BIN_DIR="${HOME}/.local/bin"

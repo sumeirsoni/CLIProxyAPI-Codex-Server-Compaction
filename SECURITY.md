@@ -2,7 +2,7 @@
 
 ## Reporting a vulnerability
 
-Report suspected vulnerabilities through [GitHub private vulnerability reporting](https://github.com/XbowSniper11/CLIProxyAPI-Codex-Server-Compaction/security/advisories/new).
+Report suspected vulnerabilities through [GitHub private vulnerability reporting](https://github.com/sumeirsoni/CLIProxyAPI-Codex-Server-Compaction/security/advisories/new).
 
 Please include a concise description, affected version or commit, impact, and sanitized reproduction steps. Allow maintainers reasonable time to investigate and prepare a fix before public disclosure.
 

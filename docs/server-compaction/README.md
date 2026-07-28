@@ -1,6 +1,6 @@
 # Codex Server Compaction
 
-Codex server compaction is an opt-in feature in the unofficial [CLIProxyAPI Codex Server Compaction fork](https://github.com/XbowSniper11/CLIProxyAPI-Codex-Server-Compaction). It gives Claude-protocol clients routed to compatible OpenAI Codex models access to OpenAI's remote compaction flow before the request reaches the configured context threshold.
+Codex server compaction is an opt-in feature in the unofficial [CLIProxyAPI Codex Server Compaction fork](https://github.com/sumeirsoni/CLIProxyAPI-Codex-Server-Compaction). It gives Claude-protocol clients routed to compatible OpenAI Codex models access to OpenAI's remote compaction flow before the request reaches the configured context threshold.
 
 This feature is disabled by default. See [Installation](INSTALL.md), [Configuration](CONFIGURATION.md), and [Security](SECURITY.md) before enabling it.
 

@@ -1,7 +1,7 @@
 # CLI Proxy API
 
 > [!IMPORTANT]
-> **Unofficial fork: [CLIProxyAPI Codex Server Compaction](https://github.com/XbowSniper11/CLIProxyAPI-Codex-Server-Compaction)**, based on [upstream CLIProxyAPI](https://github.com/router-for-me/CLIProxyAPI). This fork adds opt-in OpenAI Codex remote compaction for Claude-protocol clients routed to compatible Codex models. Actual Anthropic Claude models cannot consume OpenAI encrypted compaction artifacts. GPT compatibility aliases remain routing aliases only. See the [server compaction documentation](docs/server-compaction/README.md).
+> **Unofficial fork: [CLIProxyAPI Codex Server Compaction](https://github.com/sumeirsoni/CLIProxyAPI-Codex-Server-Compaction)**, based on [upstream CLIProxyAPI](https://github.com/router-for-me/CLIProxyAPI). This fork adds opt-in OpenAI Codex remote compaction for Claude-protocol clients routed to compatible Codex models. Actual Anthropic Claude models cannot consume OpenAI encrypted compaction artifacts. GPT compatibility aliases remain routing aliases only. See the [server compaction documentation](docs/server-compaction/README.md).
 
 English | [中文](README_CN.md) | [日本語](README_JA.md)
 
