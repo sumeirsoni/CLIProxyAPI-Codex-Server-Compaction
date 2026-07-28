@@ -28,8 +28,41 @@ auths/*
 /auths
 !auths/.gitkeep
 
+# Local server-compaction deployment artifacts
+/compaction/state.db
+/compaction/state.db.lock
+/compaction/state.db-shm
+/compaction/state.db-wal
+/.compaction/state.db
+/.compaction/state.db.lock
+/.compaction/state.db-shm
+/.compaction/state.db-wal
+/compaction-state.db
+/compaction-state.db.lock
+/compaction-state.db-shm
+/compaction-state.db-wal
+/config.compaction.local.yaml
+/config.compaction.local.yml
+/server-compaction.local.yaml
+/server-compaction.local.yml
+/credentials.compaction.local.yaml
+/credentials.compaction.local.yml
+/oauth.compaction.local.json
+/codex-oauth.local.json
+/.env.compaction.local
+/auths-compaction/
+/*.local.plist
+/*compaction*.plist
+/cli-proxy-api-compaction
+/cli-proxy-api-compaction.exe
+/CLIProxyAPI_*_compaction*.tar.gz
+/CLIProxyAPI_*_compaction*.zip
+/compaction*.log
+
 # Documentation
 docs/*
+!docs/server-compaction/
+!docs/server-compaction/**
 AGENTS.md
 CLAUDE.md
 GEMINI.md

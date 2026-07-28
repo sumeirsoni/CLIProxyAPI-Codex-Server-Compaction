@@ -260,8 +260,7 @@ codex-server-compaction:
   retained-user-tokens: 20000
   state-ttl: "168h"
   models:
-    gpt-5.4: 1000000
-    # gpt-5.5: 272000
+    gpt-5.6-sol: 1000000
 
 # xAI provider behavior.
 xai:
