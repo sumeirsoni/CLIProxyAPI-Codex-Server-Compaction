@@ -80,7 +80,7 @@ Before a release that changes state behavior:
 - `config.example.yaml` uses a currently verified model example.
 - Public docs contain no credentials, private IDs, personal paths, or deployment-specific details.
 - CI uses the Go version from `go.mod`.
-- Linux and macOS formatting, test, vet, and build jobs pass.
+- Linux, macOS, and Windows formatting, test, vet, and build jobs pass.
 - Focused Linux race tests pass.
 - Markdown links and YAML parse successfully.
 - Docker publishing remains disabled until a fork-owned registry is deliberately configured.

@@ -23,6 +23,8 @@ jobs:
             binary_suffix: ""
           - os: macos-latest
             binary_suffix: ""
+          - os: windows-latest
+            binary_suffix: ".exe"
     steps:
       - name: Checkout
         uses: actions/checkout@v6
