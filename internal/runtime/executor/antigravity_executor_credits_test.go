@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
-	"sync"
 	"testing"
 	"time"
 
@@ -22,10 +21,18 @@ import (
 )
 
 func resetAntigravityCreditsRetryState() {
-	antigravityCreditsFailureByAuth = sync.Map{}
-	antigravityShortCooldownByAuth = sync.Map{}
-	antigravityCreditsBalanceByAuth = sync.Map{}
-	antigravityCreditsHintRefreshByID = sync.Map{}
+	antigravityCreditsHintRefreshByID.Range(func(_, value any) bool {
+		state, ok := value.(*antigravityCreditsHintRefreshState)
+		if ok && state != nil {
+			state.mu.Lock()
+			state.mu.Unlock()
+		}
+		return true
+	})
+	antigravityCreditsFailureByAuth.Clear()
+	antigravityShortCooldownByAuth.Clear()
+	antigravityCreditsBalanceByAuth.Clear()
+	antigravityCreditsHintRefreshByID.Clear()
 }
 
 type closeSignalReadCloser struct {
@@ -507,7 +514,7 @@ func TestAntigravityAuthHasCredits(t *testing.T) {
 func TestAntigravityAuthHasCreditsRequiredHomeBalanceUsesKV(t *testing.T) {
 	resetAntigravityCreditsRetryState()
 	t.Cleanup(resetAntigravityCreditsRetryState)
-	const authID = "home-balance-auth"
+	authID := fmt.Sprintf("home-balance-auth-%d", time.Now().UnixNano())
 	client := newFakeAntigravityKVClient()
 	client.values[antigravityCreditsBalanceKey(authID)] = mustAntigravityJSON(t, antigravityCreditsBalance{
 		CreditAmount:    10,
@@ -569,7 +576,7 @@ func TestAntigravityShortCooldownRequiredHomeKV(t *testing.T) {
 	if client.setCount != 1 || client.lastSetTTL != duration+5*time.Second {
 		t.Fatalf("KVSet count/ttl = %d/%v, want 1/%v", client.setCount, client.lastSetTTL, duration+5*time.Second)
 	}
-	antigravityShortCooldownByAuth = sync.Map{}
+	antigravityShortCooldownByAuth.Clear()
 	inCooldown, remaining, errRead := antigravityIsInShortCooldownRequired(context.Background(), auth, "claude-sonnet-4-5", now.Add(5*time.Second))
 	if errRead != nil {
 		t.Fatalf("antigravityIsInShortCooldownRequired() error = %v", errRead)
