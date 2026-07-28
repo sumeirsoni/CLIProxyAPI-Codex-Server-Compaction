@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -213,37 +214,46 @@ func TestIsClaudeLocalCompactionRequestOnlyChecksCurrentUserMessage(t *testing.T
 	}
 }
 
-func TestOpenCodexCompactionDBRejectsSymlinksAndUnsafePermissions(t *testing.T) {
-	root := t.TempDir()
-	realDir := filepath.Join(root, "real")
-	if err := os.Mkdir(realDir, 0o700); err != nil {
-		t.Fatal(err)
-	}
-	linkDir := filepath.Join(root, "link")
-	if err := os.Symlink(realDir, linkDir); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := openCodexCompactionDB(filepath.Join(linkDir, "state.db")); err == nil {
-		t.Fatal("symlink state directory was accepted")
-	}
-	unsafeDir := filepath.Join(root, "unsafe")
-	if err := os.Mkdir(unsafeDir, 0o755); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := openCodexCompactionDB(filepath.Join(unsafeDir, "state.db")); err == nil {
-		t.Fatal("unsafe state directory permissions were accepted")
-	}
-	safeDir := filepath.Join(root, "safe")
-	if err := os.Mkdir(safeDir, 0o700); err != nil {
-		t.Fatal(err)
-	}
-	unsafeFile := filepath.Join(safeDir, "state.db")
-	if err := os.WriteFile(unsafeFile, []byte("not bolt"), 0o644); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := openCodexCompactionDB(unsafeFile); err == nil {
-		t.Fatal("unsafe state file permissions were accepted")
-	}
+func TestOpenCodexCompactionDBRejectsUnsafePaths(t *testing.T) {
+	t.Run("symlink", func(t *testing.T) {
+		root := t.TempDir()
+		realDir := filepath.Join(root, "real")
+		if err := os.Mkdir(realDir, 0o700); err != nil {
+			t.Fatal(err)
+		}
+		linkDir := filepath.Join(root, "link")
+		if err := os.Symlink(realDir, linkDir); err != nil {
+			t.Skipf("symlinks unavailable: %v", err)
+		}
+		if _, err := openCodexCompactionDB(filepath.Join(linkDir, "state.db")); err == nil {
+			t.Fatal("symlink state directory was accepted")
+		}
+	})
+
+	t.Run("permissions", func(t *testing.T) {
+		if runtime.GOOS == "windows" {
+			t.Skip("POSIX permission bits are unavailable on Windows")
+		}
+		root := t.TempDir()
+		unsafeDir := filepath.Join(root, "unsafe")
+		if err := os.Mkdir(unsafeDir, 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := openCodexCompactionDB(filepath.Join(unsafeDir, "state.db")); err == nil {
+			t.Fatal("unsafe state directory permissions were accepted")
+		}
+		safeDir := filepath.Join(root, "safe")
+		if err := os.Mkdir(safeDir, 0o700); err != nil {
+			t.Fatal(err)
+		}
+		unsafeFile := filepath.Join(safeDir, "state.db")
+		if err := os.WriteFile(unsafeFile, []byte("not bolt"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := openCodexCompactionDB(unsafeFile); err == nil {
+			t.Fatal("unsafe state file permissions were accepted")
+		}
+	})
 }
 
 func TestPruneCodexCompactionLineagesBoundsAndDropsOldest(t *testing.T) {
